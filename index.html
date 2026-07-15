@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Công Cụ Áp Mã Shopee Thực Tế</title>
+    <title>Công Cụ Áp Mã Shopee Nhanh</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
@@ -11,24 +11,23 @@
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border-t-4 border-orange-500">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-xl font-bold text-gray-800">Mở Nhanh Mã</h1>
-            <span class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded border border-orange-200">Bản Đa Nền Tảng</span>
+            <span class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded border border-orange-200">Tốc Độ Cao</span>
         </div>
 
         <div class="border-2 border-purple-400 rounded-xl p-4 mb-6">
             <label class="block text-xs font-semibold text-gray-500 mb-2">LINK SẢN PHẨM SHOPEE</label>
-            <input type="text" id="shopeeLink" placeholder="https://shp.ee/..." 
+            <input type="text" id="shopeeLink" placeholder="Dán link Shopee vào đây..." 
                 class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4 text-sm focus:outline-none focus:border-purple-500">
             
             <button onclick="pasteLink()" class="w-full bg-purple-600 text-white font-semibold py-3 rounded-lg mb-4 hover:bg-purple-700 transition shadow-sm">
                 📋 Dán sản phẩm
             </button>
             
-            <!-- Hai nút lựa chọn mã -->
             <div class="flex gap-2 mb-2">
-                <button id="btnFb" onclick="processLink('facebook')" class="w-1/2 bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-1 shadow-sm">
+                <button onclick="processLink('facebook')" class="w-1/2 bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-1 shadow-sm">
                     📘 Mã Facebook
                 </button>
-                <button id="btnYt" onclick="processLink('youtube')" class="w-1/2 bg-red-600 text-white font-semibold py-3 rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-1 shadow-sm">
+                <button onclick="processLink('youtube')" class="w-1/2 bg-red-600 text-white font-semibold py-3 rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-1 shadow-sm">
                     🔴 Mã YouTube
                 </button>
             </div>
@@ -43,54 +42,33 @@
                 const text = await navigator.clipboard.readText();
                 document.getElementById('shopeeLink').value = text;
             } catch (err) {
-                showMessage("Trình duyệt chặn dán tự động, hãy dán thủ công.", "text-red-500");
+                showMessage("Vui lòng nhấn đè vào ô và chọn 'Dán' thủ công.", "text-red-500");
             }
         }
 
-        async function processLink(platform) {
-            const inputLink = document.getElementById('shopeeLink').value.trim();
-            const btnFb = document.getElementById('btnFb');
-            const btnYt = document.getElementById('btnYt');
+        function processLink(platform) {
+            let inputLink = document.getElementById('shopeeLink').value.trim();
             
-            if (!inputLink) {
-                showMessage("Vui lòng nhập link sản phẩm!", "text-red-500");
+            if (!inputLink || (!inputLink.includes('shopee.vn') && !inputLink.includes('shp.ee') && !inputLink.includes('s.shopee.vn'))) {
+                showMessage("Vui lòng nhập đúng link Shopee!", "text-red-500");
                 return;
             }
 
-            // Đổi trạng thái nút bấm trong lúc chờ
-            const originalFb = btnFb.innerHTML;
-            const originalYt = btnYt.innerHTML;
-            
-            if (platform === 'facebook') {
-                btnFb.innerHTML = "⏳ Đang xử lý...";
-                btnFb.classList.add('opacity-50', 'cursor-not-allowed');
-                btnYt.classList.add('opacity-50', 'pointer-events-none');
-            } else {
-                btnYt.innerHTML = "⏳ Đang xử lý...";
-                btnYt.classList.add('opacity-50', 'cursor-not-allowed');
-                btnFb.classList.add('opacity-50', 'pointer-events-none');
-            }
+            showMessage(`Đang mở app để lấy mã ${platform}...`, "text-green-600");
 
-            try {
-                // Gửi yêu cầu lên Vercel kèm theo tên nền tảng
-                const response = await fetch(`/api/resolve?url=${encodeURIComponent(inputLink)}&platform=${platform}`);
-                const data = await response.json();
+            // Nối trực tiếp thông số Độc quyền vào link mà không cần máy chủ
+            let extraParams = `utm_source=${platform}&utm_medium=affiliate&utm_campaign=exclusive_voucher`;
+            let finalUrl = inputLink.includes('?') ? (inputLink + '&' + extraParams) : (inputLink + '?' + extraParams);
 
-                if (response.ok && data.deepLink) {
-                    showMessage(`Đang mở app để lấy mã ${platform}...`, "text-green-600");
-                    window.location.href = data.deepLink;
-                } else {
-                    showMessage(data.error || "Có lỗi xảy ra.", "text-red-500");
-                }
-            } catch (error) {
-                showMessage("Lỗi kết nối đến máy chủ.", "text-red-500");
-            } finally {
-                // Phục hồi nút bấm
-                btnFb.innerHTML = originalFb;
-                btnYt.innerHTML = originalYt;
-                btnFb.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-                btnYt.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-            }
+            // Chuyển đổi thành giao thức mở App
+            let deepLink = finalUrl.replace(/^https?:\/\//, 'shopeevn://');
+
+            // Tạo lệnh giả lập click để qua mặt hệ thống chặn cửa sổ bật lên của trình duyệt
+            let a = document.createElement('a');
+            a.href = deepLink;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         function showMessage(msg, colorClass) {
