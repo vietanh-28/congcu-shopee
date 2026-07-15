@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     const { url } = req.query;
 
     if (!url) {
@@ -6,7 +6,6 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Gửi request đến link rút gọn và tự động đi theo (follow) để lấy link đích cuối cùng
         const response = await fetch(url, {
             method: 'GET',
             redirect: 'follow',
@@ -17,9 +16,7 @@ export default async function handler(req, res) {
 
         const finalUrl = response.url;
 
-        // Nếu đích đến là Shopee, chuyển đổi thành Deep Link mở app
         if (finalUrl.includes('shopee.vn')) {
-            // Thay thế https:// thành shopeevn:// để ép thiết bị di động mở ứng dụng
             const deepLink = finalUrl.replace(/^https?:\/\//, 'shopeevn://');
             
             return res.status(200).json({ 
@@ -34,4 +31,4 @@ export default async function handler(req, res) {
     } catch (error) {
         return res.status(500).json({ error: "Không thể xử lý đường link này." });
     }
-}
+};
