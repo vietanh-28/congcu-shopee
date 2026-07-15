@@ -17,18 +17,15 @@ module.exports = async function handler(req, res) {
         let finalUrl = response.url;
 
         if (finalUrl.includes('shopee.vn')) {
-            try {
-                let parsedUrl = new URL(finalUrl);
-                
-                // Đọc thông số nút bấm để gán thẻ tương ứng
-                const source = (platform === 'youtube') ? 'youtube' : 'facebook';
-                
-                parsedUrl.searchParams.set('utm_source', source);
-                parsedUrl.searchParams.set('utm_medium', 'affiliate');
-                parsedUrl.searchParams.set('utm_campaign', 'exclusive_voucher');
-                finalUrl = parsedUrl.toString();
-            } catch (e) {
-                // Bỏ qua nếu lỗi phân tích
+            const source = (platform === 'youtube') ? 'youtube' : 'facebook';
+            
+            // Nối trực tiếp thông số vào link để không làm hỏng cấu trúc tiếng Việt của Shopee
+            const extraParams = `utm_source=${source}&utm_medium=affiliate&utm_campaign=exclusive_voucher`;
+            
+            if (finalUrl.includes('?')) {
+                finalUrl = finalUrl + '&' + extraParams;
+            } else {
+                finalUrl = finalUrl + '?' + extraParams;
             }
 
             const deepLink = finalUrl.replace(/^https?:\/\//, 'shopeevn://');
