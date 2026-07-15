@@ -6,7 +6,7 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        // Bước 1: Máy chủ Vercel truy cập link rút gọn để lấy link dài thật
+        // Tự động đi theo link rút gọn để lấy link gốc
         const response = await fetch(url, {
             method: 'GET',
             redirect: 'follow',
@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
         let finalUrl = response.url;
 
         if (finalUrl.includes('shopee.vn')) {
-            // Bước 2: Tự động gắn mã Affiliate của bạn vào link dài
+            // Tự động kẹp mã Affiliate của bạn vào link
             const MY_AFF_ID = "an_17355520340";
             const source = (platform === 'youtube') ? 'youtube' : 'facebook';
             
@@ -30,15 +30,15 @@ module.exports = async function handler(req, res) {
                 finalUrl = finalUrl + '?' + extraParams;
             }
 
-            // Bước 3: Chuyển thành link ép mở app
+            // Chuyển thành link ép mở app
             const deepLink = finalUrl.replace(/^https?:\/\//, 'shopeevn://');
             
             return res.status(200).json({ deepLink: deepLink });
         } else {
-            return res.status(400).json({ error: "Đây không phải là link Shopee hợp lệ." });
+            return res.status(400).json({ error: "Đây không phải là link Shopee." });
         }
 
     } catch (error) {
-        return res.status(500).json({ error: "Không thể xử lý đường link này." });
+        return res.status(500).json({ error: "Không thể giải mã link này." });
     }
 };
