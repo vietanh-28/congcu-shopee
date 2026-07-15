@@ -6,6 +6,7 @@ module.exports = async function handler(req, res) {
     }
 
     try {
+        // Bước 1: Máy chủ Vercel truy cập link rút gọn để lấy link dài thật
         const response = await fetch(url, {
             method: 'GET',
             redirect: 'follow',
@@ -17,10 +18,11 @@ module.exports = async function handler(req, res) {
         let finalUrl = response.url;
 
         if (finalUrl.includes('shopee.vn')) {
+            // Bước 2: Tự động gắn mã Affiliate của bạn vào link dài
+            const MY_AFF_ID = "an_17355520340";
             const source = (platform === 'youtube') ? 'youtube' : 'facebook';
             
-            // Nối trực tiếp thông số vào link để không làm hỏng cấu trúc tiếng Việt của Shopee
-            const extraParams = `utm_source=${source}&utm_medium=affiliate&utm_campaign=exclusive_voucher`;
+            const extraParams = `utm_source=${source}&utm_medium=affiliate&utm_campaign=exclusive_voucher&aff_id=${MY_AFF_ID}`;
             
             if (finalUrl.includes('?')) {
                 finalUrl = finalUrl + '&' + extraParams;
@@ -28,13 +30,10 @@ module.exports = async function handler(req, res) {
                 finalUrl = finalUrl + '?' + extraParams;
             }
 
+            // Bước 3: Chuyển thành link ép mở app
             const deepLink = finalUrl.replace(/^https?:\/\//, 'shopeevn://');
             
-            return res.status(200).json({ 
-                originalUrl: url,
-                finalUrl: finalUrl,
-                deepLink: deepLink
-            });
+            return res.status(200).json({ deepLink: deepLink });
         } else {
             return res.status(400).json({ error: "Đây không phải là link Shopee hợp lệ." });
         }
