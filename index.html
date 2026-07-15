@@ -11,12 +11,12 @@
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border-t-4 border-orange-500">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-xl font-bold text-gray-800">Mở Nhanh Mã Độc Quyền</h1>
-            <span class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded border border-orange-200">Bản Tự Động Vạn Năng</span>
+            <span class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded border border-orange-200">Bản Cố Định (Ổn định nhất)</span>
         </div>
 
         <div class="border-2 border-purple-400 rounded-xl p-4 mb-6">
-            <label class="block text-xs font-semibold text-gray-500 mb-2">DÁN BẤT KỲ LINK SHOPEE NÀO VÀO ĐÂY</label>
-            <input type="text" id="shopeeLink" placeholder="Ví dụ: https://s.shopee.vn/..." 
+            <label class="block text-xs font-semibold text-gray-500 mb-2">LINK DÀI SẢN PHẨM SHOPEE</label>
+            <input type="text" id="shopeeLink" placeholder="Phải là link dài: https://shopee.vn/..." 
                 class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4 text-sm focus:outline-none focus:border-purple-500">
             
             <button onclick="pasteLink()" class="w-full bg-purple-600 text-white font-semibold py-3 rounded-lg mb-4 hover:bg-purple-700 transition shadow-sm">
@@ -24,10 +24,10 @@
             </button>
             
             <div class="flex gap-2 mb-2">
-                <button id="btnFb" onclick="processLink('facebook')" class="w-1/2 bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-1 shadow-sm">
+                <button onclick="processLink('facebook')" class="w-1/2 bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-1 shadow-sm">
                     📘 Mã Facebook
                 </button>
-                <button id="btnYt" onclick="processLink('youtube')" class="w-1/2 bg-red-600 text-white font-semibold py-3 rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-1 shadow-sm">
+                <button onclick="processLink('youtube')" class="w-1/2 bg-red-600 text-white font-semibold py-3 rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-1 shadow-sm">
                     🔴 Mã YouTube
                 </button>
             </div>
@@ -37,16 +37,19 @@
     </div>
 
     <script>
+        // MÃ ĐỐI TÁC CỦA BẠN ĐÃ ĐƯỢC GẮN
+        const MY_AFF_ID = "an_17355520340"; 
+
         async function pasteLink() {
             try {
                 const text = await navigator.clipboard.readText();
                 document.getElementById('shopeeLink').value = text;
             } catch (err) {
-                showMessage("Vui lòng nhấn đè vào ô và chọn 'Dán' thủ công.", "text-red-500");
+                showMessage("Trình duyệt chặn dán tự động, hãy dán thủ công.", "text-red-500");
             }
         }
 
-        async function processLink(platform) {
+        function processLink(platform) {
             let inputLink = document.getElementById('shopeeLink').value.trim();
             
             if (!inputLink) {
@@ -54,43 +57,27 @@
                 return;
             }
 
-            const btnFb = document.getElementById('btnFb');
-            const btnYt = document.getElementById('btnYt');
-            const originalFb = btnFb.innerHTML;
-            const originalYt = btnYt.innerHTML;
-
-            // Đổi text nút bấm để báo hiệu đang chạy
-            if (platform === 'facebook') {
-                btnFb.innerHTML = "⏳ Đang giải mã...";
-                btnFb.classList.add('opacity-50');
-            } else {
-                btnYt.innerHTML = "⏳ Đang giải mã...";
-                btnYt.classList.add('opacity-50');
+            // Bộ lọc: Bắt buộc phải là link dài, nếu là link ngắn sẽ báo lỗi ngay
+            if (inputLink.includes('shp.ee') || inputLink.includes('s.shopee.vn')) {
+                showMessage("BỊ CHẶN: Vercel không giải mã được link ngắn. Bạn phải copy LINK DÀI trên Safari/Chrome!", "text-red-500");
+                return;
             }
 
-            try {
-                // Gửi thẳng link rút gọn lên máy chủ để giải mã
-                const response = await fetch(`/api/resolve?url=${encodeURIComponent(inputLink)}&platform=${platform}`);
-                const data = await response.json();
+            showMessage(`Đang mở app để lấy mã ${platform}...`, "text-green-600");
 
-                if (response.ok && data.deepLink) {
-                    showMessage(`Đang bung mã ${platform}...`, "text-green-600");
-                    let a = document.createElement('a');
-                    a.href = data.deepLink;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                } else {
-                    showMessage(data.error || "Có lỗi xảy ra.", "text-red-500");
-                }
-            } catch (error) {
-                showMessage("Lỗi kết nối đến máy chủ giải mã.", "text-red-500");
-            } finally {
-                btnFb.innerHTML = originalFb;
-                btnYt.innerHTML = originalYt;
-                btnFb.classList.remove('opacity-50');
-                btnYt.classList.remove('opacity-50');
-            }
+            // Nối trực tiếp mã Affiliate và thẻ nguồn
+            let extraParams = `utm_source=${platform}&utm_medium=affiliate&utm_campaign=exclusive_voucher&aff_id=${MY_AFF_ID}`;
+            let finalUrl = inputLink.includes('?') ? (inputLink + '&' + extraParams) : (inputLink + '?' + extraParams);
+
+            // Chuyển thành link mở app
+            let deepLink = finalUrl.replace(/^https?:\/\//, 'shopeevn://');
+
+            // Ép mở app ngay lập tức
+            let a = document.createElement('a');
+            a.href = deepLink;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         function showMessage(msg, colorClass) {
@@ -98,7 +85,7 @@
             statusDiv.textContent = msg;
             statusDiv.className = `text-center text-sm font-medium mt-2 ${colorClass}`;
             statusDiv.classList.remove('hidden');
-            setTimeout(() => { statusDiv.classList.add('hidden'); }, 3000);
+            setTimeout(() => { statusDiv.classList.add('hidden'); }, 4000);
         }
     </script>
 </body>
