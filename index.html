@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Công Cụ Áp Mã Shopee Nhanh</title>
+    <title>Công Cụ Áp Mã Độc Quyền</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border-t-4 border-orange-500">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-xl font-bold text-gray-800">Mở Nhanh Mã</h1>
-            <span class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded border border-orange-200">Tốc Độ Cao</span>
+            <h1 class="text-xl font-bold text-gray-800">Mở Nhanh Mã Độc Quyền</h1>
+            <span class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded border border-orange-200">Bản Cá Nhân Hóa</span>
         </div>
 
         <div class="border-2 border-purple-400 rounded-xl p-4 mb-6">
-            <label class="block text-xs font-semibold text-gray-500 mb-2">LINK SẢN PHẨM SHOPEE</label>
-            <input type="text" id="shopeeLink" placeholder="Dán link Shopee vào đây..." 
+            <label class="block text-xs font-semibold text-gray-500 mb-2">LINK DÀI SẢN PHẨM SHOPEE</label>
+            <input type="text" id="shopeeLink" placeholder="https://shopee.vn/..." 
                 class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4 text-sm focus:outline-none focus:border-purple-500">
             
             <button onclick="pasteLink()" class="w-full bg-purple-600 text-white font-semibold py-3 rounded-lg mb-4 hover:bg-purple-700 transition shadow-sm">
@@ -37,6 +37,9 @@
     </div>
 
     <script>
+        // MÃ AFFILIATE CỦA BẠN ĐÃ ĐƯỢC GẮN TỰ ĐỘNG Ở ĐÂY:
+        const MY_AFF_ID = "an_17355520340"; 
+
         async function pasteLink() {
             try {
                 const text = await navigator.clipboard.readText();
@@ -49,21 +52,27 @@
         function processLink(platform) {
             let inputLink = document.getElementById('shopeeLink').value.trim();
             
-            if (!inputLink || (!inputLink.includes('shopee.vn') && !inputLink.includes('shp.ee') && !inputLink.includes('s.shopee.vn'))) {
-                showMessage("Vui lòng nhập đúng link Shopee!", "text-red-500");
+            if (!inputLink) {
+                showMessage("Vui lòng nhập link sản phẩm!", "text-red-500");
+                return;
+            }
+
+            // CHẶN LINK RÚT GỌN
+            if (inputLink.includes('shp.ee') || inputLink.includes('s.shopee.vn')) {
+                showMessage("Lỗi: Vui lòng dán LINK SẠCH (shopee.vn/product/...)", "text-red-500");
                 return;
             }
 
             showMessage(`Đang mở app để lấy mã ${platform}...`, "text-green-600");
 
-            // Nối trực tiếp thông số Độc quyền vào link mà không cần máy chủ
-            let extraParams = `utm_source=${platform}&utm_medium=affiliate&utm_campaign=exclusive_voucher`;
+            // Nối cứng thẻ nền tảng và thẻ Affiliate ID vào link
+            let extraParams = `utm_source=${platform}&utm_medium=affiliate&utm_campaign=exclusive_voucher&aff_id=${MY_AFF_ID}`;
             let finalUrl = inputLink.includes('?') ? (inputLink + '&' + extraParams) : (inputLink + '?' + extraParams);
 
-            // Chuyển đổi thành giao thức mở App
+            // Chuyển thành link mở app
             let deepLink = finalUrl.replace(/^https?:\/\//, 'shopeevn://');
 
-            // Tạo lệnh giả lập click để qua mặt hệ thống chặn cửa sổ bật lên của trình duyệt
+            // Ép mở app trực tiếp
             let a = document.createElement('a');
             a.href = deepLink;
             document.body.appendChild(a);
@@ -76,7 +85,7 @@
             statusDiv.textContent = msg;
             statusDiv.className = `text-center text-sm font-medium mt-2 ${colorClass}`;
             statusDiv.classList.remove('hidden');
-            setTimeout(() => { statusDiv.classList.add('hidden'); }, 3000);
+            setTimeout(() => { statusDiv.classList.add('hidden'); }, 4000);
         }
     </script>
 </body>
